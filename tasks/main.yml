@@ -1,0 +1,51 @@
+---
+
+- name: make sure machine directory and keys subdir exist
+  local_action: file path="{{ local_key_dir }}" state=directory follow=yes mode=0755
+
+- name: Check to see if ssh_host_dsa_key exists
+  local_action: stat path="{{ local_key_dir }}/{{ item.file_name }}"
+  register: key_file
+  with_items: "{{ ssh_key_config }}"
+  ignore_errors: True
+
+- name: Generate ssh_host_dsa_key
+  local_action: shell ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
+  with_items: "{{ key_file.results }}"
+  when: item.stat.exists == False
+
+- name: Copy SSH Host private keys
+  copy: src={{ local_key_dir }}/{{ item.file_name }}
+        dest=/var/ssh/{{ item.file_name }}
+        owner=root group=root mode=0600
+  with_items: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
+
+- name: Copy SSH Host public keys
+  copy: src={{ local_key_dir }}/{{ item.file_name }}.pub
+        dest=/var/ssh/{{ item.file_name }}.pub
+        owner=root group=root mode=0644
+  with_items: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
+
+- name: remove unnecessary old lines from sshd config (reduce warnings)
+  lineinfile:  dest=/etc/ssh/sshd_config state=absent regexp="{{ item }}" 
+  with_items: 
+    - "^LookupClientHostnames" 
+    - "^VerifyReverseMapping"
+    - "^MaxAuthTriesLog" 
+    - "^RhostsAuthentication" 
+
+- name: run handlers to clear SSH if necessary
+  meta: flush_handlers
+  
+- name: Verify that we can talk to the servers
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+    delay: 1
+    timeout: 30
+    state: started
+  with_items: "{{ play_hosts }}"

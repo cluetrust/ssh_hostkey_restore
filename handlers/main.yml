@@ -1,0 +1,15 @@
+- name: restart sshd
+  service: name=network/ssh enabled=yes state=restarted
+  notify: kill cached ssh connections
+
+# if you’re coming in through a session that doesn’t have ssh host keys match, your credential forwarding will not work
+# so pulling stuff out of svn or git-over-ssh will fail. Hence, we kill cached ssh connections when necessary.
+
+- name: kill cached ssh connections
+  local_action: shell ssh -O stop {{ hostvars[item].ansible_ssh_host|default(inventory_hostname) }} -o ControlPath=~/.ansible/cp/ansible-ssh-{{ hostvars[item].ansible_ssh_host|default(inventory_hostname) }}-{{ hostvars[item].ansible_ssh_port|default('22') }}-{{ hostvars[item].ansible_ssh_user|default('root') }}
+  run_once: yes
+  register: socket_removal
+  failed_when: >
+    socket_removal|failed
+    and "No such file or directory" not in socket_removal.stderr
+  with_items: "{{ play_hosts }}"

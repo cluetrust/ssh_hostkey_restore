@@ -1,0 +1,11 @@
+---
+# defaults file for ssh_hostkey_restore
+ssh_key_config:
+    - file_name: ssh_host_dsa_key
+      algorithm: dsa
+    - file_name: ssh_host_ecdsa_key
+      algorithm: ecdsa
+    - file_name: ssh_host_ed25519_key
+      algorithm: ed25519
+    - file_name: ssh_host_rsa_key
+      algorithm: rsa

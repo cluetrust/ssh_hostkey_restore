@@ -1,0 +1,3 @@
+---
+
+local_key_dir: "{{host_specific_files}}/ssh_host_keys"
