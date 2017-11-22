@@ -43,9 +43,8 @@
   
 - name: Verify that we can talk to the servers
   wait_for:
-    host: "{{ item }}"
+    host: "{{ ansible_host }}"
     port: 22
     delay: 1
     timeout: 30
     state: started
-  with_items: "{{ play_hosts }}"
