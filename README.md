@@ -19,7 +19,9 @@ ssh_key_config: which key types to handle
 Dependencies
 ------------
 
-None
+In order for this to function correctly, `control_path` must be `control_path=%(directory)s/%%C` in the ansible.cfg.
+As of Ansible 2.2, the `control_path` default was changed to something that I couldn't easily replicate in jinja2, 
+thus, I switched to using the `%C` from OpenSSH 6.7+ [GBP]
 
 Example Playbook
 ----------------
