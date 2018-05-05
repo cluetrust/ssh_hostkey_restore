@@ -1,5 +1,12 @@
 ---
 
+- name: gather os specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version}}.yml"
+    - "{{ ansible_distribution }}.yml"
+  tags: vars
+  
 - name: make sure machine directory and keys subdir exist
   local_action: file path="{{ local_key_dir }}" state=directory follow=yes mode=0755
 
@@ -16,7 +23,7 @@
 
 - name: Copy SSH Host private keys
   copy: src={{ local_key_dir }}/{{ item.file_name }}
-        dest=/var/ssh/{{ item.file_name }}
+        dest={{ssh_key_dir}}/{{ item.file_name }}
         owner=root group=root mode=0600
   with_items: "{{ ssh_key_config }}"
   notify:
@@ -24,7 +31,7 @@
 
 - name: Copy SSH Host public keys
   copy: src={{ local_key_dir }}/{{ item.file_name }}.pub
-        dest=/var/ssh/{{ item.file_name }}.pub
+        dest={{ssh_key_dir}}/{{ item.file_name }}.pub
         owner=root group=root mode=0644
   with_items: "{{ ssh_key_config }}"
   notify:

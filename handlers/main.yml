@@ -1,5 +1,5 @@
 - name: restart sshd
-  service: name=network/ssh enabled=yes state=restarted
+  service: name={{sshd_service_name}} enabled=yes state=restarted
   notify: kill cached ssh connections
 
 # if you’re coming in through a session that doesn’t have ssh host keys match, your credential forwarding will not work

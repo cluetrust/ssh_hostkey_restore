@@ -11,9 +11,10 @@ None
 Role Variables
 --------------
 
-ssh_key_config: which key types to handle
-    - file_name: file name portion (.pub added as well)
-      algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
+    ssh_key_config: which key types to handle
+        - file_name: file name portion (.pub added as well)
+        - algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
+    ssh_key_dir: directory to hold the keys
 
 
 Dependencies
