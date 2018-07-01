@@ -10,7 +10,7 @@
   run_once: yes
   register: socket_removal
   failed_when: >
-    socket_removal|failed
+    socket_removal is failed
     and "No such file or directory" not in socket_removal.stderr
   with_items: "{{ play_hosts }}"
 
