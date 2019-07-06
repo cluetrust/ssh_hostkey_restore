@@ -6,7 +6,7 @@
 # so pulling stuff out of svn or git-over-ssh will fail. Hence, we kill cached ssh connections when necessary.
 
 - name: kill cached ssh connections
-  local_action: shell ssh -O stop {{ hostvars[item].ansible_ssh_user|default('root')+'@'+hostvars[item].ansible_ssh_host|default(inventory_hostname) }} -o ControlPath=~/.ansible/cp/%C
+  local_action: shell ssh -O stop {{ hostvars[inventory_hostname]['ansible_user']|default('root')+'@'+hostvars[item]['ansible_host']|default(hostvars[item]['inventory_hostname']) }} -o ControlPath=~/.ansible/cp/%C
   run_once: yes
   register: socket_removal
   failed_when: >
