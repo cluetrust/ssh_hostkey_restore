@@ -44,7 +44,15 @@
     - "^VerifyReverseMapping"
     - "^MaxAuthTriesLog" 
     - "^RhostsAuthentication" 
-
+    
+- name: update sshd config to reduce the duration of bad connections
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^LoginGraceTime'
+    line: LoginGraceTime 8
+  notify:
+    - restart sshd
+    
 - name: run handlers to clear SSH if necessary
   meta: flush_handlers
   
