@@ -1,0 +1,3 @@
+---
+ssh_key_dir: /etc/ssh
+sshd_service_name: ssh
