@@ -44,6 +44,11 @@
     - "^VerifyReverseMapping"
     - "^MaxAuthTriesLog" 
     - "^RhostsAuthentication" 
+    - "^RhostsRSAAuthentication"
+    - "^RSAAuthentication"
+    - "^ServerKeyBits"
+    - "^KeyRegenerationInterval"
+    - "^UsePrivilegeSeparation"
     
 - name: update sshd config to reduce the duration of bad connections
   lineinfile:
