@@ -66,5 +66,6 @@
     host: "{{ ansible_host }}"
     port: 22
     delay: 1
-    timeout: 30
+    timeout: "{{ssh_hostkey_restore_timeout}}"
     state: started
+  delegate_to: "localhost"

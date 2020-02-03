@@ -9,3 +9,4 @@ ssh_key_config:
       algorithm: ed25519
     - file_name: ssh_host_rsa_key
       algorithm: rsa
+ssh_hostkey_restore_timeout: 30
