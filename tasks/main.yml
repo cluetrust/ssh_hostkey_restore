@@ -9,17 +9,20 @@
   
 - name: make sure machine directory and keys subdir exist
   local_action: file path="{{ local_key_dir }}" state=directory follow=yes mode=0755
-
+  become: no
+  
 - name: Check to see if ssh_host_dsa_key exists
   local_action: stat path="{{ local_key_dir }}/{{ item.file_name }}"
   register: key_file
   with_items: "{{ ssh_key_config }}"
   ignore_errors: True
+  become: no
 
 - name: Generate ssh_host_dsa_key
   local_action: shell ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
   with_items: "{{ key_file.results }}"
   when: item.stat.exists == False
+  become: no
 
 - name: Copy SSH Host private keys
   copy: src={{ local_key_dir }}/{{ item.file_name }}
@@ -69,3 +72,4 @@
     timeout: "{{ssh_hostkey_restore_timeout}}"
     state: started
   delegate_to: "localhost"
+  become: no
