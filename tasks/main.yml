@@ -3,30 +3,33 @@
 - name: gather os specific variables
   include_vars: "{{ item }}"
   with_first_found:
-    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version}}.yml"
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_distribution }}.yml"
   tags: vars
-  
+
 - name: make sure machine directory and keys subdir exist
-  local_action: file path="{{ local_key_dir }}" state=directory follow=yes mode=0755
+  file: path="{{ local_key_dir }}" state=directory follow=yes mode=0755
+  delegate_to: localhost
   become: no
-  
+
 - name: Check to see if ssh_host_dsa_key exists
-  local_action: stat path="{{ local_key_dir }}/{{ item.file_name }}"
+  stat: path="{{ local_key_dir }}/{{ item.file_name }}"
+  delegate_to: localhost
   register: key_file
   with_items: "{{ ssh_key_config }}"
   ignore_errors: True
   become: no
 
 - name: Generate ssh_host_dsa_key
-  local_action: shell ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
+  shell: ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
+  delegate_to: localhost
   with_items: "{{ key_file.results }}"
-  when: item.stat.exists == False
+  when: not item.stat.exists
   become: no
 
 - name: Copy SSH Host private keys
   copy: src={{ local_key_dir }}/{{ item.file_name }}
-        dest={{ssh_key_dir}}/{{ item.file_name }}
+        dest={{ ssh_key_dir }}/{{ item.file_name }}
         owner=root group=root mode=0600
   with_items: "{{ ssh_key_config }}"
   notify:
@@ -34,25 +37,25 @@
 
 - name: Copy SSH Host public keys
   copy: src={{ local_key_dir }}/{{ item.file_name }}.pub
-        dest={{ssh_key_dir}}/{{ item.file_name }}.pub
+        dest={{ ssh_key_dir }}/{{ item.file_name }}.pub
         owner=root group=root mode=0644
   with_items: "{{ ssh_key_config }}"
   notify:
     - restart sshd
 
 - name: remove unnecessary old lines from sshd config (reduce warnings)
-  lineinfile:  dest=/etc/ssh/sshd_config state=absent regexp="{{ item }}" 
-  with_items: 
-    - "^LookupClientHostnames" 
+  lineinfile:  dest=/etc/ssh/sshd_config state=absent regexp="{{ item }}"
+  with_items:
+    - "^LookupClientHostnames"
     - "^VerifyReverseMapping"
-    - "^MaxAuthTriesLog" 
-    - "^RhostsAuthentication" 
+    - "^MaxAuthTriesLog"
+    - "^RhostsAuthentication"
     - "^RhostsRSAAuthentication"
     - "^RSAAuthentication"
     - "^ServerKeyBits"
     - "^KeyRegenerationInterval"
     - "^UsePrivilegeSeparation"
-    
+
 - name: update sshd config to reduce the duration of bad connections
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -60,16 +63,16 @@
     line: LoginGraceTime 8
   notify:
     - restart sshd
-    
+
 - name: run handlers to clear SSH if necessary
   meta: flush_handlers
-  
+
 - name: Verify that we can talk to the servers
   wait_for:
     host: "{{ ansible_host }}"
     port: 22
     delay: 1
-    timeout: "{{ssh_hostkey_restore_timeout}}"
+    timeout: "{{ ssh_hostkey_restore_timeout }}"
     state: started
   delegate_to: "localhost"
   become: no
