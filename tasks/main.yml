@@ -55,12 +55,34 @@
     - "^ServerKeyBits"
     - "^KeyRegenerationInterval"
     - "^UsePrivilegeSeparation"
+  notify:
+    - restart sshd
 
 - name: update sshd config to reduce the duration of bad connections
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^LoginGraceTime'
-    line: LoginGraceTime 8
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    # stop bleeding listen resources
+    - regexp: '^[#]?LoginGraceTime'
+      line: "LoginGraceTime 8"
+    # Following recommendations of https://github.com/arthepsy/ssh-audit as of 2020-10
+    - regexp: '^[#]?kexalgorithms'
+      line: "kexalgorithms curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"
+    - regexp: ^[#]?casignaturealgorithms
+      line: casignaturealgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+    - regexp: ^[#]?hostbasedacceptedkeytypes
+      line: hostbasedacceptedkeytypes ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+    - regexp: ^[#]?hostkeyalgorithms
+      line: hostkeyalgorithms ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+    - regexp: ^[#]?pubkeyacceptedkeytypes
+      line: pubkeyacceptedkeytypes ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+    - regexp: ^[#]?macs
+      line: macs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com
+    # Also, put aes256-ctr first to get aes-ni speed bump
+    - regexp: ^[#]?ciphers
+      line: ciphers aes256-ctr,chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
   notify:
     - restart sshd
 
