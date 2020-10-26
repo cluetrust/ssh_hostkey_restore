@@ -16,6 +16,24 @@ Role Variables
         - algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
     ssh_key_dir: directory to hold the keys
 
+	Note: the following are pairs, the _best version is our current best practices, the
+    	plain version is the one that gets rendered, both are lists. 
+	sshd_kex_algorithms_best: best-practice key exchange algorithms
+	sshd_kex_algorithms: [sshd_kex_algorithms_best]
+	sshd_ca_sig_algorithms_best:
+	sshd_ca_sig_algorithms: "{{ sshd_ca_sig_algorithms_best }}"
+	sshd_host_based_accepted_key_algorithms_best: [sshd_host_key_algorithms_best]
+	sshd_host_based_accepted_key_algorithms: "{{ sshd_host_based_accepted_key_algorithms_best }}"
+	sshd_host_key_algorithms_best: 
+	sshd_host_key_algorithms: [sshd_host_key_algorithms_best]
+	sshd_pubkey_accepted_key_types_best: [sshd_host_key_algorithms_best]
+	sshd_pubkey_accepted_key_types: [sshd_pubkey_accepted_key_types_best]
+	sshd_mac_algorithms_best: 
+	sshd_mac_algorithms: [sshd_mac_algorithms_best]
+	sshd_ciphers_best:
+	sshd_ciphers: [sshd_ciphers_best]
+
+
 
 Dependencies
 ------------
@@ -32,6 +50,12 @@ Including an example of how to use your role (for instance, with variables passe
     - hosts: servers
       roles:
         - ssh_hostkey_restore
+
+    - hosts: cranky_servers
+      roles:
+        - ssh_hostkey_restore
+      vars:
+        - sshd_mac_algorithms: "{{ sshd_mac_algorithms_best+['hmac-sha2-512']}}"
 
 License
 -------

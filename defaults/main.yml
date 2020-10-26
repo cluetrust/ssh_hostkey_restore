@@ -10,3 +10,58 @@ ssh_key_config:
     - file_name: ssh_host_rsa_key
       algorithm: rsa
 ssh_hostkey_restore_timeout: 30
+
+sshd_kex_algorithms_best:
+    - curve25519-sha256@libssh.org
+    - diffie-hellman-group16-sha512
+    - diffie-hellman-group18-sha512
+    - diffie-hellman-group14-sha256
+sshd_kex_algorithms: "{{ sshd_kex_algorithms_best }}"
+    
+sshd_ca_sig_algorithms_best:
+    - ecdsa-sha2-nistp384
+    - ecdsa-sha2-nistp521
+    - ssh-ed25519
+    - rsa-sha2-512
+    - rsa-sha2-256
+    - ssh-rsa
+sshd_ca_sig_algorithms: "{{ sshd_ca_sig_algorithms_best }}"
+
+sshd_host_based_accepted_key_algorithms_best: "{{ sshd_host_key_algorithms_best }}"
+sshd_host_based_accepted_key_algorithms: "{{ sshd_host_based_accepted_key_algorithms_best }}"
+
+sshd_host_key_algorithms_best: 
+    - ecdsa-sha2-nistp256-cert-v01@openssh.com
+    - ecdsa-sha2-nistp384-cert-v01@openssh.com
+    - ecdsa-sha2-nistp521-cert-v01@openssh.com
+    - ssh-ed25519-cert-v01@openssh.com
+    - rsa-sha2-512-cert-v01@openssh.com
+    - rsa-sha2-256-cert-v01@openssh.com
+    - ssh-rsa-cert-v01@openssh.com
+    - ssh-dss-cert-v01@openssh.com
+    - ecdsa-sha2-nistp384
+    - ecdsa-sha2-nistp521
+    - ssh-ed25519
+    - rsa-sha2-512
+    - rsa-sha2-256
+    - ssh-rsa
+sshd_host_key_algorithms: "{{sshd_host_key_algorithms_best }}"
+    
+sshd_pubkey_accepted_key_types_best: "{{ sshd_host_key_algorithms_best}}"
+sshd_pubkey_accepted_key_types: "{{ sshd_pubkey_accepted_key_types_best }}"
+
+sshd_mac_algorithms_best: 
+    - umac-128-etm@openssh.com
+    - hmac-sha2-256-etm@openssh.com
+    - hmac-sha2-512-etm@openssh.com
+sshd_mac_algorithms: "{{ sshd_mac_algorithms_best }}"
+
+# aes256-ctr first to get aes-ni speed bump
+sshd_ciphers_best:
+    - aes256-ctr
+    - chacha20-poly1305@openssh.com
+    - aes128-ctr
+    - aes192-ctr
+    - aes128-gcm@openssh.com
+    - aes256-gcm@openssh.com
+sshd_ciphers: "{{ sshd_ciphers_best }}"

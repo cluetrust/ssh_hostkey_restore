@@ -69,20 +69,20 @@
       line: "LoginGraceTime 8"
     # Following recommendations of https://github.com/arthepsy/ssh-audit as of 2020-10
     - regexp: '^[#]?kexalgorithms'
-      line: "kexalgorithms curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256"
+      line: "kexalgorithms {{ sshd_kex_algorithms | join(',')}}"
     - regexp: ^[#]?casignaturealgorithms
-      line: casignaturealgorithms ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+      line: "casignaturealgorithms {{ sshd_ca_sig_algorithms | join(',')}}"
     - regexp: ^[#]?hostbasedacceptedkeytypes
-      line: hostbasedacceptedkeytypes ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+      line: "hostbasedacceptedkeytypes {{sshd_host_based_accepted_key_algorithms| join(',')}}"
     - regexp: ^[#]?hostkeyalgorithms
-      line: hostkeyalgorithms ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+      line: "hostkeyalgorithms {{ sshd_host_key_algorithms|join(',')}}"
     - regexp: ^[#]?pubkeyacceptedkeytypes
-      line: pubkeyacceptedkeytypes ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,rsa-sha2-512-cert-v01@openssh.com,rsa-sha2-256-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+      line: "pubkeyacceptedkeytypes {{ sshd_pubkey_accepted_key_types|join(',')}}"
     - regexp: ^[#]?macs
-      line: macs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com
+      line: "macs {{ sshd_mac_algorithms | join(',') }}"
     # Also, put aes256-ctr first to get aes-ni speed bump
     - regexp: ^[#]?ciphers
-      line: ciphers aes256-ctr,chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com
+      line: "ciphers {{ sshd_ciphers | join(',')}}"
   when: ansible_distribution != 'Debian' and ansible_distribution != 'Ubuntu'
   notify:
     - restart sshd
