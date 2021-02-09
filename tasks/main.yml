@@ -96,7 +96,7 @@
 
 - name: Verify that we can talk to the server
   command:
-    cmd: "ssh -o StrictHostKeyChecking=no {{ansible_user}}@{{ansible_host}} echo hi"
+    cmd: "ssh -o StrictHostKeyChecking=no {{ansible_user}}@{{inventory_hostname}} echo hi"
   register: result
   until: "result.rc==0 and result.stdout=='hi'"
   retries: 20
