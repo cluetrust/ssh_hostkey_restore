@@ -11,6 +11,16 @@ ssh_key_config:
       algorithm: rsa
 ssh_hostkey_restore_timeout: 30
 
+# Algorithms and key types ending in _best are per
+# the recommendations of:
+# https://pypi.org/project/ssh-audit/
+# git repo at
+# https://github.com/jtesta/ssh-audit
+# forked from https://github.com/arthepsy/ssh-audit due to maintainer MIA
+#
+# Recommendations last aligned 2020-10
+#
+
 sshd_kex_algorithms_best:
     - curve25519-sha256@libssh.org
     - diffie-hellman-group16-sha512

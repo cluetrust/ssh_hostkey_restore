@@ -58,7 +58,7 @@
   notify:
     - restart sshd
 
-- name: update sshd config to reduce the duration of bad connections
+- name: update sshd config to reduce the duration of bad connections and tune up algorithms
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
@@ -71,7 +71,10 @@
     # if not given a key, since that is all we do here, ever."
     - regexp: '^[#]?ChallengeResponseAuthentication'
       line: "ChallengeResponseAuthentication no"
-    # Following recommendations of https://github.com/arthepsy/ssh-audit as of 2020-10
+    #
+    # default vars and narrative including source of guidance
+    # can be found in ../defaults/main.yml
+    # 
     - regexp: '^[#]?kexalgorithms'
       line: "kexalgorithms {{ sshd_kex_algorithms | join(',')}}"
     - regexp: ^[#]?casignaturealgorithms
