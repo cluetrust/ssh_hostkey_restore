@@ -5,15 +5,21 @@ galaxy_info:
 
   # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
-  issue_tracker_url: https://atlas.cluetrust.com/jira
+  #issue_tracker_url: 
 
   # Some suggested licenses:
-  license: Proprietary
+  license: MIT
 
   min_ansible_version: 1.2
 
   platforms:
   - name: SmartOS
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+  - name: Ubuntu
     versions:
     - all
 
