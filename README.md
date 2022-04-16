@@ -2,6 +2,7 @@ ssh_hostkey_restore
 =========
 
 Manages ssh_hostkey so that you don't have to deal with complaints from the SSH tools (and ansible).
+Works on SmartOS and at least Ubuntu, raspi and Debian varieties of Linux.
 
 Requirements
 ------------
@@ -60,5 +61,5 @@ Including an example of how to use your role (for instance, with variables passe
 License
 -------
 
-Proprietary
+MIT
 
