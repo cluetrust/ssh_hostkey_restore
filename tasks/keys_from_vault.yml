@@ -117,7 +117,6 @@
     state: absent
   loop: "{{ ssh_key_config }}"
   delegate_to: localhost
-  when: False
 
 - name: remove old or temporary private keys
   file:
@@ -125,4 +124,3 @@
     state: absent
   loop: "{{ ssh_key_config }}"
   delegate_to: localhost
-  when: False
