@@ -75,3 +75,6 @@ sshd_ciphers_best:
     - aes128-gcm@openssh.com
     - aes256-gcm@openssh.com
 sshd_ciphers: "{{ sshd_ciphers_best }}"
+
+vault_ssh_publickey_path: "{{ vault_ssh_key_mount }}/data/ssh_host_keys/public/{{ inventory_hostname }}"
+vault_ssh_privatekey_path: "{{ vault_ssh_key_mount }}/data/ssh_host_keys/private/{{ inventory_hostname }}"
