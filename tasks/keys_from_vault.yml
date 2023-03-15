@@ -113,14 +113,14 @@
 
 - name: remove old or temporary public keys
   file:
-    path: "{{ local_key_dir }}/{{ item.item.file_name+'.pub' }}"
+    path: "{{ local_key_dir }}/{{ item.file_name+'.pub' }}"
     state: absent
   loop: "{{ ssh_key_config }}"
   delegate_to: localhost
 
 - name: remove old or temporary private keys
   file:
-    path: "{{ local_key_dir }}/{{ item.item.file_name }}"
+    path: "{{ local_key_dir }}/{{ item.file_name }}"
     state: absent
   loop: "{{ ssh_key_config }}"
   delegate_to: localhost
