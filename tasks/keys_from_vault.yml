@@ -1,0 +1,126 @@
+---
+- name: make sure machine directory and keys subdir exist
+  file: 
+    path: "{{ local_key_dir }}"
+    state: directory
+    follow: yes
+    mode: '0755'
+  delegate_to: localhost
+  become: no
+
+- name: read public keys if available
+  community.hashi_vault.vault_read:
+    path: "{{ vault_ssh_publickey_path }}"
+  register: public_keys
+  delegate_to: localhost
+  ignore_errors: yes
+
+- name: read private keys if available
+  community.hashi_vault.vault_read:
+    path: "{{ vault_ssh_privatekey_path }}"
+  register: private_keys
+  delegate_to: localhost
+  ignore_errors: yes
+
+- name: set available keys
+  set_fact:
+    ssh_public_keys: "{{ ssh_public_keys | default({}) | combine( { item.algorithm: public_keys.data.data.data[item.algorithm] } ) }}"
+    ssh_private_keys: "{{ ssh_private_keys | default({}) | combine( { item.algorithm: private_keys.data.data.data[item.algorithm] } ) }}"
+  loop: "{{ ssh_key_config }}"
+  when:
+    - private_keys.data.data.data[item.algorithm] is defined
+    - public_keys.data.data.data[item.algorithm] is defined
+
+- name: "Check to see if {{ item.algorithm }} exists"
+  stat:
+    path: "{{ local_key_dir }}/{{ item.file_name }}"
+  delegate_to: localhost
+  register: key_file
+  loop: "{{ ssh_key_config }}"
+  ignore_errors: True
+  become: no
+
+- name: "Generate {{ item.item.algorithm }}"
+  shell: ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
+  delegate_to: localhost
+  with_items: "{{ key_file.results }}"
+  register: new_keys
+  when:
+    - not item.stat.exists
+    - ssh_private_keys[item.item.algorithm] is not defined
+  become: no
+
+- name: load new keys (or old if on disk)
+  set_fact:
+    ssh_public_keys: "{{ ssh_public_keys | default({}) | combine( { item.item.item.algorithm: lookup('file', local_key_dir+'/'+item.item.item.file_name+'.pub' ) } ) }}"
+    ssh_private_keys: "{{ ssh_private_keys | default({}) | combine( { item.item.item.algorithm: lookup('file', local_key_dir+'/'+item.item.item.file_name ) } ) }}"
+  loop: "{{ new_keys.results }}"
+  register: set_keys
+  when: (not item is skipped) or (ssh_public_keys[item.item.item.algorithm] is not defined)
+
+- name: debug results
+  debug:
+    var: set_keys
+    verbosity: 2
+    
+- name: check public keys
+  debug:
+    var: ssh_public_keys
+    verbosity: 2
+
+- name: check private keys
+  debug:
+    var: ssh_private_keys
+    verbosity: 2
+
+- name: store public keys if changed
+  community.hashi_vault.vault_write:
+    path: "{{ vault_ssh_publickey_path }}"
+    data:
+      data: "{{ ssh_public_keys }}"
+  delegate_to: localhost
+  when: public_keys.data.data.data is not defined or public_keys.data.data.data != ssh_public_keys
+
+- name: store private keys if changed
+  community.hashi_vault.vault_write:
+    path: "{{ vault_ssh_privatekey_path }}"
+    data:
+      data: "{{ ssh_private_keys }}"
+  delegate_to: localhost
+  when: private_keys.data.data.data is not defined or private_keys.data.data.data != ssh_private_keys 
+  
+- name: Copy SSH Host private keys
+  copy: 
+    content: "{{ ssh_private_keys[ item.algorithm ] }}\n"
+    dest: "{{ ssh_key_dir }}/{{ item.file_name }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
+
+- name: Copy SSH Host public keys
+  copy:
+    content: "{{ ssh_public_keys[ item.algorithm ] }}\n"
+    dest: "{{ ssh_key_dir }}/{{ item.file_name }}.pub"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
+
+- name: remove old or temporary public keys
+  file:
+    path: "{{ local_key_dir }}/{{ item.file_name+'.pub' }}"
+    state: absent
+  loop: "{{ ssh_key_config }}"
+  delegate_to: localhost
+
+- name: remove old or temporary private keys
+  file:
+    path: "{{ local_key_dir }}/{{ item.file_name }}"
+    state: absent
+  loop: "{{ ssh_key_config }}"
+  delegate_to: localhost

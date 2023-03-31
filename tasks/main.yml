@@ -7,52 +7,13 @@
     - "{{ ansible_distribution }}.yml"
   tags: vars
 
-- name: make sure machine directory and keys subdir exist
-  file: 
-    path: "{{ local_key_dir }}"
-    state: directory
-    follow: yes
-    mode: '0755'
-  delegate_to: localhost
-  become: no
-
-- name: Check to see if ssh_host_dsa_key exists
-  stat:
-    path: "{{ local_key_dir }}/{{ item.file_name }}"
-  delegate_to: localhost
-  register: key_file
-  with_items: "{{ ssh_key_config }}"
-  ignore_errors: True
-  become: no
-
-- name: Generate ssh_host_dsa_key
-  shell: ssh-keygen -f "{{ local_key_dir }}/{{ item.item.file_name }}" -C 'root@{{ inventory_hostname }}' -N '' -t {{ item.item.algorithm }}
-  delegate_to: localhost
-  with_items: "{{ key_file.results }}"
-  when: not item.stat.exists
-  become: no
-
-- name: Copy SSH Host private keys
-  copy: 
-    src: "{{ local_key_dir }}/{{ item.file_name }}"
-    dest: "{{ ssh_key_dir }}/{{ item.file_name }}"
-    owner: root
-    group: root
-    mode: '0600'
-  with_items: "{{ ssh_key_config }}"
-  notify:
-    - restart sshd
-
-- name: Copy SSH Host public keys
-  copy:
-    src: "{{ local_key_dir }}/{{ item.file_name }}.pub"
-    dest: "{{ ssh_key_dir }}/{{ item.file_name }}.pub"
-    owner: root
-    group: root
-    mode: '0644'
-  with_items: "{{ ssh_key_config }}"
-  notify:
-    - restart sshd
+- name: copy keys from files
+  include_tasks: keys_from_files.yml
+  when: vault_ssh_key_mount is not defined
+  
+- name: copy keys from vault
+  include_tasks: keys_from_vault.yml
+  when: vault_ssh_key_mount is defined
 
 - name: remove unnecessary old lines from sshd config (reduce warnings)
   lineinfile:
