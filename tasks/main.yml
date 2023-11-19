@@ -9,11 +9,11 @@
 
 - name: copy keys from files
   include_tasks: keys_from_files.yml
-  when: vault_ssh_key_mount is not defined
+  when: vault_ssh_key_mount is not defined and ssh_use_existing_keys is not defined
   
 - name: copy keys from vault
   include_tasks: keys_from_vault.yml
-  when: vault_ssh_key_mount is defined
+  when: vault_ssh_key_mount is defined and ssh_use_existing_keys is not defined
 
 - name: remove unnecessary old lines from sshd config (reduce warnings)
   lineinfile:

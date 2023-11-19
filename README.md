@@ -16,6 +16,7 @@ Role Variables
         - file_name: file name portion (.pub added as well)
         - algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
     ssh_key_dir: directory to hold the keys
+	ssh_use_existing_keys: define to use keys on host instead of from storage
 
 	Note: the following are pairs, the _best version is our current best practices, the
     	plain version is the one that gets rendered, both are lists. 
