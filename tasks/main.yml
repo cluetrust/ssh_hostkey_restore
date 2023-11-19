@@ -78,7 +78,7 @@
 
 - name: sign keys
   include_tasks: sign_keys.yml
-  when: vault_ssh_key_mount is defined and vault_sign_path is defined
+  when: vault_ssh_key_mount is defined and vault_ssh_host_sign_path is defined
 
 - name: run handlers to clear SSH if necessary
   meta: flush_handlers

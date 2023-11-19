@@ -11,7 +11,7 @@
 
 - name: Write certs to server
   copy:
-    content: "{{ lookup('community.hashi_vault.vault_write', '{{ vault_sign_path }}', data={'cert_type':'host','public_key': ssh_public_keys[item.algorithm]} )['data']['signed_key'] }}"
+    content: "{{ lookup('community.hashi_vault.vault_write', '{{ vault_ssh_host_sign_path }}', data={'cert_type':'host','public_key': ssh_public_keys[item.algorithm]} )['data']['signed_key'] }}"
     dest: "{{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
     owner: root
     group: root
