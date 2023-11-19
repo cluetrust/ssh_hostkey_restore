@@ -4,6 +4,23 @@ ssh_hostkey_restore
 Manages ssh_hostkey so that you don't have to deal with complaints from the SSH tools (and ansible).
 Works on SmartOS and at least Ubuntu, raspi and Debian varieties of Linux.
 
+- The first versions created long-running private/public key pairs and stored them locally
+  (for encryption with `ansible vault` and checking in to `git`). 
+- The following versions moved that storage to hashicorp `vault` if the appropriate variables
+  are set.
+- The most recent versions add the ability to use hashicorp `vault` to sign the keys
+  that are created on the device, enabling shorter-duration key lives paired with the
+  ease of having a single line in your `known_hosts` file to incorporate all keys
+  signed with that certificate.
+  The CA public key can be retrieved by:
+    
+	curl https://{{ vault_server }}:8200/v1/ssh-host-signer/public_key
+
+  and needs to be stored in your `known_hosts` file in the form:
+    
+	@cert-authority _domain_names_with_wildcards_ _CA_KEY_FROM_ABOVE_ 
+
+
 Requirements
 ------------
 
