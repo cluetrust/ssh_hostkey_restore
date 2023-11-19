@@ -34,6 +34,10 @@ Role Variables
 	sshd_ciphers_best:
 	sshd_ciphers: [sshd_ciphers_best]
 
+Inherited Role Variables
+------------------------
+	vault_ssh_sign_path: secrets engine for signing host keys. If defined, all keys will be signed
+	vault_ssh_key_mount: path to ssh keys storage if present
 
 
 Dependencies

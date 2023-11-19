@@ -1,0 +1,30 @@
+---
+
+#- name: Retrieve SSH keys from server
+#  set_fact:
+#    ssh_public_keys: "{{ ssh_public_keys | default({}) | combine( { item.item.item.algorithm: lookup('file', local_key_dir+'/'+item.item.item.file_name+'.pub' ) } ) }}"
+#  copy:
+#    content: "{{ ssh_public_keys[ item.algorithm ] }}\n"
+#    dest: "{{ ssh_key_dir }}/{{ item.file_name }}.pub"
+#  with_items: "{{ ssh_key_config }}"
+#  when: "items.algorithm not in ssh_public_keys"
+
+- name: Write certs to server
+  copy:
+    content"": "{{ lookup('community.hashi_vault.vault_write', '{{ vault_sign_path }}', data={'cert_type':'host','public_key': ssh_public_keys[item.algorithm]} ) }}"
+    dest: "{{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
+
+- name: make sure our hostkeys are enabled
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^[#]?HostCertificate {{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
+    line: "HostCertificate {{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
+  loop: "{{ ssh_key_config }}"
+  notify:
+    - restart sshd
