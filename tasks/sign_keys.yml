@@ -25,7 +25,7 @@
     path: /etc/ssh/sshd_config
     regexp: "^[#]?HostCertificate {{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
     line: "HostCertificate {{ ssh_key_dir }}/{{ item.file_name }}-cert.pub"
-    insertafter: "^[#]?HostCertificate {{ ssh_key_dir }}/{{ item.file_name }}"
+    insertafter: "^[#]?HostKey {{ ssh_key_dir }}/{{ item.file_name }}"
   loop: "{{ ssh_key_config }}"
   notify:
     - restart sshd
