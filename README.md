@@ -4,6 +4,23 @@ ssh_hostkey_restore
 Manages ssh_hostkey so that you don't have to deal with complaints from the SSH tools (and ansible).
 Works on SmartOS and at least Ubuntu, raspi and Debian varieties of Linux.
 
+- The first versions created long-running private/public key pairs and stored them locally
+  (for encryption with `ansible vault` and checking in to `git`). 
+- The following versions moved that storage to hashicorp `vault` if the appropriate variables
+  are set.
+- The most recent versions add the ability to use hashicorp `vault` to sign the keys
+  that are created on the device, enabling shorter-duration key lives paired with the
+  ease of having a single line in your `known_hosts` file to incorporate all keys
+  signed with that certificate.
+  The CA public key can be retrieved by:
+    
+	curl https://{{ vault_server }}:8200/v1/ssh-host-signer/public_key
+
+  and needs to be stored in your `known_hosts` file in the form:
+    
+	@cert-authority _domain_names_with_wildcards_ _CA_KEY_FROM_ABOVE_ 
+
+
 Requirements
 ------------
 
@@ -16,6 +33,7 @@ Role Variables
         - file_name: file name portion (.pub added as well)
         - algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
     ssh_key_dir: directory to hold the keys
+	ssh_use_existing_keys: define to use keys on host instead of from storage
 
 	Note: the following are pairs, the _best version is our current best practices, the
     	plain version is the one that gets rendered, both are lists. 
@@ -34,6 +52,10 @@ Role Variables
 	sshd_ciphers_best:
 	sshd_ciphers: [sshd_ciphers_best]
 
+Inherited Role Variables
+------------------------
+	vault_ssh_sign_path: secrets engine for signing host keys. If defined, all keys will be signed
+	vault_ssh_key_mount: path to ssh keys storage if present
 
 
 Dependencies

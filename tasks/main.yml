@@ -9,11 +9,11 @@
 
 - name: copy keys from files
   include_tasks: keys_from_files.yml
-  when: vault_ssh_key_mount is not defined
+  when: vault_ssh_key_mount is not defined and ssh_use_existing_keys is not defined
   
 - name: copy keys from vault
   include_tasks: keys_from_vault.yml
-  when: vault_ssh_key_mount is defined
+  when: vault_ssh_key_mount is defined and ssh_use_existing_keys is not defined
 
 - name: remove unnecessary old lines from sshd config (reduce warnings)
   lineinfile:
@@ -75,13 +75,10 @@
     regexp: "^[#]?HostKey {{ ssh_key_dir }}/{{ item.file_name }}"
     line: "HostKey {{ ssh_key_dir }}/{{ item.file_name }}"
   loop: "{{ ssh_key_config }}"
-  
-#- name: make safe moduli
-#  shell: "awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.safe"
-#  creates: /etc/ssh/moduli.safe
-#- name: replace moduli
-#  shell: "cp /etc/ssh/moduli.safe /etc/ssh/moduli"
-#
+
+- name: sign keys
+  include_tasks: sign_keys.yml
+  when: vault_ssh_key_mount is defined and vault_ssh_host_sign_path is defined
 
 - name: run handlers to clear SSH if necessary
   meta: flush_handlers
