@@ -23,6 +23,8 @@
     regexp: "^HostKey /var/ssh/ssh_host_{{ item }}_key"
   with_items: "{{ ssh_key_algorithms_remove }}"
   when: "item not in  ssh_key_config | map(attribute='algorithm')"
+  notify:
+    - restart sshd
 
 - name: remove unnecessary old lines from sshd config (reduce warnings)
   lineinfile:
