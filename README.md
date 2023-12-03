@@ -19,6 +19,8 @@ Works on SmartOS and at least Ubuntu, raspi and Debian varieties of Linux.
   and needs to be stored in your `known_hosts` file in the form:
     
 	@cert-authority _domain_names_with_wildcards_ _CA_KEY_FROM_ABOVE_ 
+- RSA keys are now removed by default due to recent exposure of key material due
+  to lattice attack.
 
 
 Requirements
@@ -32,6 +34,8 @@ Role Variables
     ssh_key_config: which key types to handle
         - file_name: file name portion (.pub added as well)
         - algorithm: algorithm (rsa, dsa, ecdsa, ed25519)
+    ssh_key_algorithms_remove: list of algoriths to remove. checked against ssh_key_config, so override
+          by putting rsa back in ssh_key_config
     ssh_key_dir: directory to hold the keys
 	ssh_use_existing_keys: define to use keys on host instead of from storage
 

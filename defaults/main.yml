@@ -7,8 +7,11 @@ ssh_key_config:
       algorithm: ecdsa
     - file_name: ssh_host_ed25519_key
       algorithm: ed25519
-    - file_name: ssh_host_rsa_key
-      algorithm: rsa
+#    - file_name: ssh_host_rsa_key
+#      algorithm: rsa
+ssh_key_algorithms_remove:
+    - rsa
+
 ssh_hostkey_restore_timeout: 30
 
 # Algorithms and key types ending in _best are per
