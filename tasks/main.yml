@@ -15,6 +15,17 @@
   include_tasks: keys_from_vault.yml
   when: vault_ssh_key_mount is defined and ssh_use_existing_keys is not defined
 
+- name: remove old key types
+  lineinfile:
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    state: absent
+    regexp: "^HostKey /var/ssh/ssh_host_{{ item }}_key"
+  with_items: "{{ ssh_key_algorithms_remove }}"
+  when: "item not in  ssh_key_config | map(attribute='algorithm')"
+  notify:
+    - restart sshd
+
 - name: remove unnecessary old lines from sshd config (reduce warnings)
   lineinfile:
     dest: /etc/ssh/sshd_config
