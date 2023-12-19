@@ -41,6 +41,7 @@
     - "^ServerKeyBits"
     - "^KeyRegenerationInterval"
     - "^UsePrivilegeSeparation"
+    - "^GSSAPIKeyExchange"
   notify:
     - restart sshd
 
@@ -79,7 +80,16 @@
   when: ansible_distribution != 'Debian' # and ansible_distribution != 'Ubuntu'
   notify:
     - restart sshd
-    
+
+- name: strip too-short keys from moduli
+  ansible.builtin.shell: |
+    awk '$5 >= {{ sshd_min_moduli }}' /etc/ssh/moduli > /etc/ssh/moduli.safe
+    mv /etc/ssh/moduli.safe /etc/ssh/moduli
+  args:
+    creates: /etc/ssh/moduli.safe
+  notify:
+    - restart sshd
+  
 - name: make sure our hostkeys are enabled
   lineinfile:
     path: /etc/ssh/sshd_config
