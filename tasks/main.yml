@@ -17,7 +17,6 @@
 
 - name: remove old key types
   lineinfile:
-  lineinfile:
     dest: /etc/ssh/sshd_config
     state: absent
     regexp: "^HostKey /var/ssh/ssh_host_{{ item }}_key"
@@ -103,6 +102,14 @@
 
 - name: run handlers to clear SSH if necessary
   meta: flush_handlers
+
+- name: add cert-authority for known hosts
+  known_hosts:
+    key: "{{ ct_host_cert }}"
+    name: "@cert-authority"
+    state: present
+    path: "/etc/ssh/known_hosts"
+  when: ct_host_cert is defined
 
 - name: Verify that we can talk to the server
   command:
